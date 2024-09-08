@@ -89,90 +89,46 @@
 
   const drawBackground = () => {
     g.reset();
-
-    // Steps
-    g.drawImage(
-      {
-        width: 34, height: 38, bpp: 1,
-        transparent: 1,
-        palette: new Uint16Array([2047,65535]),
-        buffer: atob("/D//D/wH/4D+AP/AH4Af4AfAB/gA4AH+ADgAPwAGAA/AAYAD8ABAAPwAAAA/AAAAD8AAAAPwAAAA/AAAAD8AAAAPwAAAB/gAAAH+AAgAf4AGAB/gAYAH+ABgA/8AHAH/4A/////////////////////////////AD/wA4AH+ABgAf4AGAB/gAYAH+ABwA/8APAD/wA8AP/AD4B/+Af4P/8Hw"),
-      },
-      width * 0.33,
-      32,
-      {
-        scale: 0.4,
-      },
-    );
-
-    // Battery
-    g.drawImage(
-      {
-        width : 28, height : 40, bpp : 1,
-        transparent : 0,
-        palette : new Uint16Array([65535,2047]),
-        buffer : atob("AB//wAH//AA//8AD//gAf/8AB//wAP/+AB//4AH//AA//8AD//gAf/8AB//wAP///g////H///8f///j///8f///h///8P///g///8D///gAD/8AAP/gAB/8AAH/gAA/8AAD/gAAP8AAB/gAAH8AAA/gAAD8AAAPgAAB8AAAHgAAA+AAADwAAAOAAAA=")
-      },
-      width - 28 * 0.4 - 2,
-      60 - 40 * 0.4 / 2,
-      {
-        scale: 0.4,
-      },
-    );
-
+    
     drawLine([
-      [0, 26],
-      [width, 26],
-    ], 2, colors.lines);
-
+      [0, 27],
+      [width, 27],
+    ], 3, colors.lines);
+    
     drawLine([
-      [0, 34],
-      [width * 0.2, 34],
-      [width * 0.35, 52],
-      [width * 0.65, 52],
-      [width * 0.8, 34],
-      [width, 34],
-    ], 2, colors.lines);
+      [0, height - 3],
+      [width, height - 3],
+    ], 3, colors.lines);
 
-    drawLine([
-      [0, 42],
-      [width * 0.2 - 4, 42],
-      [width * 0.35 - 4, 60],
-      [width * 0.35 - 4, height],
-    ], 2, colors.lines);
+    const corner = (x1: number, x2: number, y1: number, y2: number) => {
+      g.setColor(colors.lines);
+      const gapX = width * 0.07;
 
-    drawLine([
-      [width, 42],
-      [width * 0.8 + 4, 42],
-      [width * 0.65 + 4, 60],
-      [width * 0.35 + 7, 60],
-      [width * 0.35 + 6, 61],
-      [width * 0.35 + 6, height],
-    ], 2, colors.lines);
+      g.fillPoly([
+        x1, y1,
+        x1 + gapX, y2,
+        x2 - gapX, y2,
+        x2, y1,
+      ]);
 
-    drawLine([
-      [width * 0.65 + 4, 60],
-      [width * 0.8 + 4, 78],
-      [width, 78],
-    ], 2, colors.lines);
-  };
+      const circleRadius = 2;
+      const circles = [
+        x1 + width * 0.09,
+        (x1 + x2) / 2,
+        x2 - width * 0.09,
+      ];
+      const circleY = y2 > y1 ? y1 + 2 : y1 - 2;
 
-  const drawSteps = () => {
-    g.reset();
+      g.setColor(colors.bg);
+      for (const x of circles) {
+        g.fillCircle(x, circleY, circleRadius);
+      }
+    };
 
-    let steps = 0;
-    require("health").readDay(new Date(), (h: { steps: number }) => steps += h.steps);
-
-    g.setFont("5x7Numeric7Seg", 2);
-    g.setFontAlign(1, 0);
-    g.setColor(colors.fg);
-    g.setBgColor(colors.bg);
-    g.drawString(
-      steps.toString(),
-      width * 0.67,
-      (25 + 55) / 2,
-      true,
-    );
+    corner(width * 0.08, width * 0.42, 30, 39);
+    corner(width * 0.58, width * 0.92, 30, 39);
+    corner(width * 0.08, width * 0.42, height - 6, height - 15);
+    corner(width * 0.58, width * 0.92, height - 6, height - 15);
   };
 
   const drawTime = () => {
@@ -190,27 +146,8 @@
     g.drawString(mins, 4, 95, true);
   };
 
-  const drawBattery = () => {
-    g.reset();
-
-    const battery = E.getBattery().toString().padStart(2, "0");
-
-    g.setFont("5x7Numeric7Seg", 2);
-    g.setFontAlign(-1, 0);
-    g.setColor(colors.fg);
-    g.setBgColor(colors.bg);
-    g.drawString(
-      battery,
-      width * 0.8,
-      60,
-      true,
-    );
-  }
-
   const draw = () => {
     drawTime();
-    drawSteps();
-    drawBattery();
 
     if (drawTimeout) clearTimeout(drawTimeout);
     drawTimeout = setTimeout(() => {
@@ -236,7 +173,7 @@
       clockInfoMenu,
       {
         app: "cyberpunkclock",
-        x: width - 80 - 8, y: 86 + i * (clockInfoHeight + 8),
+        x: width - 80 - 8, y: 50 + i * (clockInfoHeight + 8),
         w: 80, h: clockInfoHeight,
         draw: (_item, info, options) => {
           let { x, y, w, h } = options;
