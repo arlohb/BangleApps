@@ -135,16 +135,20 @@
     g.fillRect(0, 24, 176, 176);
     var clockInfo = require("clock_info");
     var clockInfoMenu = clockInfo.load();
-    var clockInfoHeight = 18;
+    var clockInfoHeight = 26;
     for (var i = 0; i < 4; i++) {
         clockInfo.addInteractive(clockInfoMenu, {
             app: "cyberpunkclock",
-            x: 8, y: 47 + i * (clockInfoHeight + 12),
+            x: 8, y: 43 + i * (clockInfoHeight + 4),
             w: 80, h: clockInfoHeight,
             draw: function (_item, info, options) {
-                var x = options.x, y = options.y, w = options.w, h = options.h;
-                g.reset();
                 var lineGap = 4;
+                var x = options.x, y = options.y, w = options.w, h = options.h;
+                x += lineGap;
+                y += lineGap;
+                w -= lineGap * 2;
+                h -= lineGap * 2;
+                g.reset();
                 var tlRadius = 10;
                 var tlBLen = 4;
                 var tlRLen = options.focus ? w * 0.8 - tlRadius : 16;

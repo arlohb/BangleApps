@@ -170,21 +170,24 @@
 
   const clockInfo = require("clock_info");
   const clockInfoMenu = clockInfo.load();
-  const clockInfoHeight = 18;
+  const clockInfoHeight = 26;
 
   for (let i = 0; i < 4; i++) {
     clockInfo.addInteractive(
       clockInfoMenu,
       {
         app: "cyberpunkclock",
-        x: 8, y: 47 + i * (clockInfoHeight + 12),
+        x: 8, y: 43 + i * (clockInfoHeight + 4),
         w: 80, h: clockInfoHeight,
         draw: (_item, info, options) => {
+          const lineGap = 4;
           let { x, y, w, h } = options;
+          x += lineGap;
+          y += lineGap;
+          w -= lineGap * 2;
+          h -= lineGap * 2;
 
           g.reset();
-
-          const lineGap = 4;
 
           const tlRadius = 10;
           const tlBLen = 4;
