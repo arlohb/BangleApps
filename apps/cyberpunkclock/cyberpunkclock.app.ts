@@ -1,20 +1,32 @@
-type Color = () => void;
-
 (() => {
   require("Font5x7Numeric7Seg").add(Graphics);
   require("Font7x11Numeric7Seg").add(Graphics);
 
-  const red: Color = () => g.setColor(1, 0, 0);
-  const cyan: Color = () => g.setColor(0, 1, 1);
+  const rawColors = {
+    red1: g.toColor(0.25, 0, 0),
+    red2: g.toColor(0.5, 0, 0),
+    red3: g.toColor(0.75, 0, 0),
+    red: g.toColor(1, 0, 0),
+
+    cyan: g.toColor(0, 1, 1),
+    yellow: g.toColor(1, 1, 0),
+    pink: g.toColor(1, 0, 0.5),
+  };
+
+  const colors = {
+    fg: rawColors.cyan,
+    bg: rawColors.red1,
+    lines: rawColors.red,
+  };
 
   const width = g.getWidth();
   const height = g.getHeight();
 
   let drawTimeout: TimeoutId | null;
 
-  const drawLine = (points: [number, number][], thickness: number, color: Color, debug?: Color) => {
+  const drawLine = (points: [number, number][], thickness: number, color: number, debug?: number) => {
     g.reset();
-    if (debug) debug();
+    if (debug) g.setColor(debug);
     
     points.unshift([
       points[0]![0] + points[0]![0] - points[1]![0],
@@ -71,7 +83,7 @@ type Color = () => void;
     for (let i = sideB.length - 1; i >= 0; i--)
       polyPoints.push(sideB[i]!);
 
-    color();
+    g.setColor(color);
     g.fillPoly(polyPoints);
   };
 
@@ -111,7 +123,7 @@ type Color = () => void;
     drawLine([
       [0, 26],
       [width, 26],
-    ], 2, red);
+    ], 2, colors.lines);
 
     drawLine([
       [0, 34],
@@ -120,14 +132,14 @@ type Color = () => void;
       [width * 0.65, 52],
       [width * 0.8, 34],
       [width, 34],
-    ], 2, red);
+    ], 2, colors.lines);
 
     drawLine([
       [0, 42],
       [width * 0.2 - 4, 42],
       [width * 0.35 - 4, 60],
       [width * 0.35 - 4, height],
-    ], 2, red);
+    ], 2, colors.lines);
 
     drawLine([
       [width, 42],
@@ -136,13 +148,13 @@ type Color = () => void;
       [width * 0.35 + 7, 60],
       [width * 0.35 + 6, 61],
       [width * 0.35 + 6, height],
-    ], 2, red);
+    ], 2, colors.lines);
 
     drawLine([
       [width * 0.65 + 4, 60],
       [width * 0.8 + 4, 78],
       [width, 78],
-    ], 2, red);
+    ], 2, colors.lines);
   };
 
   const drawSteps = () => {
@@ -153,7 +165,8 @@ type Color = () => void;
 
     g.setFont("5x7Numeric7Seg", 2);
     g.setFontAlign(1, 0);
-    cyan();
+    g.setColor(colors.fg);
+    g.setBgColor(colors.bg);
     g.drawString(
       steps.toString(),
       width * 0.67,
@@ -171,7 +184,8 @@ type Color = () => void;
 
     g.setFont("7x11Numeric7Seg", 3);
     g.setFontAlign(-1, -1);
-    cyan();
+    g.setColor(colors.fg);
+    g.setBgColor(colors.bg);
     g.drawString(hours, 4, 60, true);
     g.drawString(mins, 4, 95, true);
   };
@@ -183,7 +197,8 @@ type Color = () => void;
 
     g.setFont("5x7Numeric7Seg", 2);
     g.setFontAlign(-1, 0);
-    cyan();
+    g.setColor(colors.fg);
+    g.setBgColor(colors.bg);
     g.drawString(
       battery,
       width * 0.8,
@@ -209,6 +224,9 @@ type Color = () => void;
   Bangle.loadWidgets();
   Bangle.drawWidgets();
 
+  g.setColor(colors.bg);
+  g.fillRect(0, 24, 176, 176);
+
   const clockInfo = require("clock_info");
   const clockInfoMenu = clockInfo.load();
   const clockInfoHeight = 22;
@@ -224,10 +242,10 @@ type Color = () => void;
           let { x, y, w, h } = options;
 
           g.reset();
-          g.setBgColor(0.25, 0, 0);
+          g.setBgColor(rawColors.red2);
           g.clearRect(x, y, x + w, y + h);
 
-          if (options.focus) cyan(); else red();
+          if (options.focus) g.setColor(colors.fg); else g.setColor(rawColors.red);
 
           const gap = 4;
           const length = 6;
@@ -265,7 +283,7 @@ type Color = () => void;
           let padding = 4;
 
           if (info.img) {
-            cyan();
+            g.setColor(colors.fg);
             padding = (h - imageSize * imageScale) / 2;
             g.drawImage(info.img, x + padding, y + padding, { scale: imageScale });
             padding += imageSize * imageScale + padding;
