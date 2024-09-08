@@ -198,92 +198,103 @@
     }, 60_000 - (Date.now() % 60_000));
   };
 
-  const createClockInfo = (x: number, y: number, w: number, h: number): ClockInfo.Options => ({
+  // ClockInfo.Info is missing some optional properties
+  type ClockInfoInfo = {
+    text: string,
+    short?: string,
+    img?: string,
+    color?: string,
+    v?: number,
+    min?: number,
+    max?: number,
+  };
+
+  const createClockInfo = (
+    draw: (item: ClockInfo.MenuItem, info: ClockInfoInfo, options: ClockInfo.InteractiveOptions) => void
+  ) => (
+    x: number, y: number, w: number, h: number
+  ): ClockInfo.Options => ({
     app: "cyberpunkclock",
     x, y, w, h,
-    draw: (_item, _info, options) => {
+    draw: (item, _info, options) => {
       // Properly type info
-      const info = _info as {
-        text: string,
-        short?: string,
-        img?: string,
-        color?: string,
-        v?: number,
-        min?: number,
-        max?: number,
-      };
+      const info = _info as ClockInfoInfo;
 
-      const lineGap = 4;
-      let { x, y, w, h } = options;
-      x += lineGap;
-      y += lineGap;
-      w -= lineGap * 2;
-      h -= lineGap * 2;
-
-      g.reset();
-
-      const tlRadius = 10;
-      const tlBLen = 4;
-      const tlRLen = options.focus ? w * 0.8 - tlRadius : 16;
-      const tlAdj = 2;
-
-      const brRadius = 6;
-      const brLLen = options.focus ? w * 0.6  - brRadius: 12;
-      const brTLen = 6;
-      const brAdj = 1;
-
-      g.setBgColor(colors.bg);
-      g.clearRect(x - lineGap, y - lineGap, x + w + lineGap, y + h + lineGap);
-
-      const shape = [
-        x + tlRadius, y,
-        x + w, y,
-        x + w, y + h - brRadius,
-        x + w - brRadius, y + h,
-        x, y + h,
-        x, y + tlRadius,
-        x + tlRadius, y,
-      ];
-      g.setColor(colors.bg2);
-
-      g.fillPoly(shape);
-      g.setColor(colors.lines);
-      g.drawPoly(shape);
-
-      if (options.focus) g.setColor(colors.highlight); else g.setColor(colors.fg);
-
-      g.drawPoly([
-        x - lineGap, y + tlRadius + tlBLen,
-        x - lineGap, y + tlRadius - tlAdj,
-        x + tlRadius - tlAdj, y - lineGap,
-        x + tlRadius + tlRLen, y - lineGap,
-      ]);
-
-      g.drawPoly([
-        x + w - brRadius - brLLen, y + h + lineGap,
-        x + w - brRadius + brAdj, y + h + lineGap,
-        x + w + lineGap, y + h - brRadius + brAdj,
-        x + w + lineGap, y + h - brRadius - brTLen,
-      ]);
-
-      const imageScale = 0.75;
-      const imageSize = 24 * imageScale;
-      const imagePad = 9;
-      const textPad = 6;
-
-      if (info.img) {
-        g.setColor(colors.fg);
-        g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
-      }
-
-      const text = info.v?.toString()
-        ?? info.short
-        ?? info.text;
-
-      g.setFont("5x7Numeric7Seg", 2);
-      g.setFontAlign(-1, 0);
-      g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
+      draw(item, info, options);
     },
+  });
+
+  const basicClockInfo = createClockInfo((_item, info, options) => {
+    const lineGap = 4;
+    let { x, y, w, h } = options;
+    x += lineGap;
+    y += lineGap;
+    w -= lineGap * 2;
+    h -= lineGap * 2;
+
+    g.reset();
+
+    const tlRadius = 10;
+    const tlBLen = 4;
+    const tlRLen = options.focus ? w * 0.8 - tlRadius : 16;
+    const tlAdj = 2;
+
+    const brRadius = 6;
+    const brLLen = options.focus ? w * 0.6  - brRadius: 12;
+    const brTLen = 6;
+    const brAdj = 1;
+
+    g.setBgColor(colors.bg);
+    g.clearRect(x - lineGap, y - lineGap, x + w + lineGap, y + h + lineGap);
+
+    const shape = [
+      x + tlRadius, y,
+      x + w, y,
+      x + w, y + h - brRadius,
+      x + w - brRadius, y + h,
+      x, y + h,
+      x, y + tlRadius,
+      x + tlRadius, y,
+    ];
+    g.setColor(colors.bg2);
+
+    g.fillPoly(shape);
+    g.setColor(colors.lines);
+    g.drawPoly(shape);
+
+    if (options.focus) g.setColor(colors.highlight); else g.setColor(colors.fg);
+
+    g.drawPoly([
+      x - lineGap, y + tlRadius + tlBLen,
+      x - lineGap, y + tlRadius - tlAdj,
+      x + tlRadius - tlAdj, y - lineGap,
+      x + tlRadius + tlRLen, y - lineGap,
+    ]);
+
+    g.drawPoly([
+      x + w - brRadius - brLLen, y + h + lineGap,
+      x + w - brRadius + brAdj, y + h + lineGap,
+      x + w + lineGap, y + h - brRadius + brAdj,
+      x + w + lineGap, y + h - brRadius - brTLen,
+    ]);
+
+    const imageScale = 0.75;
+    const imageSize = 24 * imageScale;
+    const imagePad = 9;
+    const textPad = 6;
+
+    if (info.img) {
+      g.setColor(colors.fg);
+      g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
+    }
+
+    const text = info.v?.toString()
+      ?? info.short
+      ?? info.text;
+
+    g.setFont("5x7Numeric7Seg", 2);
+    g.setFontAlign(-1, 0);
+    g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
   });
 
   g.clear();
@@ -301,7 +312,7 @@
   for (let i = 0; i < 4; i++) {
     clockInfo.addInteractive(
       clockInfoMenu,
-      createClockInfo(8, 43 + i * (clockInfoHeight + 4), 80, clockInfoHeight),
+      basicClockInfo(8, 43 + i * (clockInfoHeight + 4), 80, clockInfoHeight),
     );
   }
 

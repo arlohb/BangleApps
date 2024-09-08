@@ -160,75 +160,78 @@
             draw();
         }, 60000 - (Date.now() % 60000));
     };
-    var createClockInfo = function (x, y, w, h) { return ({
+    var createClockInfo = function (draw) { return function (x, y, w, h) { return ({
         app: "cyberpunkclock",
         x: x,
         y: y,
         w: w,
         h: h,
-        draw: function (_item, _info, options) {
-            var _a, _b, _c;
+        draw: function (item, _info, options) {
             var info = _info;
-            var lineGap = 4;
-            var x = options.x, y = options.y, w = options.w, h = options.h;
-            x += lineGap;
-            y += lineGap;
-            w -= lineGap * 2;
-            h -= lineGap * 2;
-            g.reset();
-            var tlRadius = 10;
-            var tlBLen = 4;
-            var tlRLen = options.focus ? w * 0.8 - tlRadius : 16;
-            var tlAdj = 2;
-            var brRadius = 6;
-            var brLLen = options.focus ? w * 0.6 - brRadius : 12;
-            var brTLen = 6;
-            var brAdj = 1;
-            g.setBgColor(colors.bg);
-            g.clearRect(x - lineGap, y - lineGap, x + w + lineGap, y + h + lineGap);
-            var shape = [
-                x + tlRadius, y,
-                x + w, y,
-                x + w, y + h - brRadius,
-                x + w - brRadius, y + h,
-                x, y + h,
-                x, y + tlRadius,
-                x + tlRadius, y,
-            ];
-            g.setColor(colors.bg2);
-            g.fillPoly(shape);
-            g.setColor(colors.lines);
-            g.drawPoly(shape);
-            if (options.focus)
-                g.setColor(colors.highlight);
-            else
-                g.setColor(colors.fg);
-            g.drawPoly([
-                x - lineGap, y + tlRadius + tlBLen,
-                x - lineGap, y + tlRadius - tlAdj,
-                x + tlRadius - tlAdj, y - lineGap,
-                x + tlRadius + tlRLen, y - lineGap,
-            ]);
-            g.drawPoly([
-                x + w - brRadius - brLLen, y + h + lineGap,
-                x + w - brRadius + brAdj, y + h + lineGap,
-                x + w + lineGap, y + h - brRadius + brAdj,
-                x + w + lineGap, y + h - brRadius - brTLen,
-            ]);
-            var imageScale = 0.75;
-            var imageSize = 24 * imageScale;
-            var imagePad = 9;
-            var textPad = 6;
-            if (info.img) {
-                g.setColor(colors.fg);
-                g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
-            }
-            var text = (_c = (_b = (_a = info.v) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : info.short) !== null && _c !== void 0 ? _c : info.text;
-            g.setFont("5x7Numeric7Seg", 2);
-            g.setFontAlign(-1, 0);
-            g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
+            draw(item, info, options);
         },
-    }); };
+    }); }; };
+    var basicClockInfo = createClockInfo(function (_item, info, options) {
+        var _a, _b, _c;
+        var lineGap = 4;
+        var x = options.x, y = options.y, w = options.w, h = options.h;
+        x += lineGap;
+        y += lineGap;
+        w -= lineGap * 2;
+        h -= lineGap * 2;
+        g.reset();
+        var tlRadius = 10;
+        var tlBLen = 4;
+        var tlRLen = options.focus ? w * 0.8 - tlRadius : 16;
+        var tlAdj = 2;
+        var brRadius = 6;
+        var brLLen = options.focus ? w * 0.6 - brRadius : 12;
+        var brTLen = 6;
+        var brAdj = 1;
+        g.setBgColor(colors.bg);
+        g.clearRect(x - lineGap, y - lineGap, x + w + lineGap, y + h + lineGap);
+        var shape = [
+            x + tlRadius, y,
+            x + w, y,
+            x + w, y + h - brRadius,
+            x + w - brRadius, y + h,
+            x, y + h,
+            x, y + tlRadius,
+            x + tlRadius, y,
+        ];
+        g.setColor(colors.bg2);
+        g.fillPoly(shape);
+        g.setColor(colors.lines);
+        g.drawPoly(shape);
+        if (options.focus)
+            g.setColor(colors.highlight);
+        else
+            g.setColor(colors.fg);
+        g.drawPoly([
+            x - lineGap, y + tlRadius + tlBLen,
+            x - lineGap, y + tlRadius - tlAdj,
+            x + tlRadius - tlAdj, y - lineGap,
+            x + tlRadius + tlRLen, y - lineGap,
+        ]);
+        g.drawPoly([
+            x + w - brRadius - brLLen, y + h + lineGap,
+            x + w - brRadius + brAdj, y + h + lineGap,
+            x + w + lineGap, y + h - brRadius + brAdj,
+            x + w + lineGap, y + h - brRadius - brTLen,
+        ]);
+        var imageScale = 0.75;
+        var imageSize = 24 * imageScale;
+        var imagePad = 9;
+        var textPad = 6;
+        if (info.img) {
+            g.setColor(colors.fg);
+            g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
+        }
+        var text = (_c = (_b = (_a = info.v) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : info.short) !== null && _c !== void 0 ? _c : info.text;
+        g.setFont("5x7Numeric7Seg", 2);
+        g.setFontAlign(-1, 0);
+        g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
+    });
     g.clear();
     Bangle.setUI("clock");
     Bangle.loadWidgets();
@@ -239,7 +242,7 @@
     var clockInfoMenu = clockInfo.load();
     var clockInfoHeight = 26;
     for (var i = 0; i < 4; i++) {
-        clockInfo.addInteractive(clockInfoMenu, createClockInfo(8, 43 + i * (clockInfoHeight + 4), 80, clockInfoHeight));
+        clockInfo.addInteractive(clockInfoMenu, basicClockInfo(8, 43 + i * (clockInfoHeight + 4), 80, clockInfoHeight));
     }
     drawBackground();
     draw();
