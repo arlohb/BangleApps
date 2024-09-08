@@ -201,7 +201,6 @@ type Color = () => void;
     drawTimeout = setTimeout(() => {
       drawTimeout = null;
       draw();
-      // TODO: This should be 60_000
     }, 60_000 - (Date.now() % 60_000));
   };
 
@@ -210,12 +209,77 @@ type Color = () => void;
   Bangle.loadWidgets();
   Bangle.drawWidgets();
 
+  const clockInfo = require("clock_info");
+  const clockInfoMenu = clockInfo.load();
+  const clockInfoHeight = 22;
+
+  for (let i = 0; i < 3; i++) {
+    clockInfo.addInteractive(
+      clockInfoMenu,
+      {
+        app: "cyberpunkclock",
+        x: width - 80 - 8, y: 86 + i * (clockInfoHeight + 8),
+        w: 80, h: clockInfoHeight,
+        draw: (_item, info, options) => {
+          let { x, y, w, h } = options;
+
+          g.reset();
+          g.setBgColor(0.25, 0, 0);
+          g.clearRect(x, y, x + w, y + h);
+
+          if (options.focus) cyan(); else red();
+
+          const gap = 4;
+          const length = 6;
+
+          // TL
+          g.drawPoly([
+            x - gap, y + length,
+            x - gap, y - gap,
+            x + length, y - gap,
+          ]);
+
+          // TR
+          g.drawPoly([
+            x + w - length, y - gap,
+            x + w + gap, y - gap,
+            x + w + gap, y + length,
+          ]);
+
+          // BL
+          g.drawPoly([
+            x - gap, y + h - length,
+            x - gap, y + h + gap,
+            x + length, y + h + gap,
+          ]);
+
+          // BR
+          g.drawPoly([
+            x + w - length, y + h + gap,
+            x + w + gap, y + h + gap,
+            x + w + gap, y + h - length,
+          ]);
+
+          const imageSize = 24;
+          const imageScale = 0.75;
+          let padding = 4;
+
+          if (info.img) {
+            cyan();
+            padding = (h - imageSize * imageScale) / 2;
+            g.drawImage(info.img, x + padding, y + padding, { scale: imageScale });
+            padding += imageSize * imageScale + padding;
+          }
+
+          g.setFont("5x7Numeric7Seg", 2);
+          g.setFontAlign(-1, 0);
+          g.drawString(info.text, x + padding, y + h / 2);
+        },
+      },
+    );
+  }
+
   drawBackground();
 
   draw();
 })();
-
-// TODO:
-// - heart rate
-// - clockinfo
-

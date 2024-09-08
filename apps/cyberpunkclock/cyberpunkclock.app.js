@@ -148,6 +148,60 @@
     Bangle.setUI("clock");
     Bangle.loadWidgets();
     Bangle.drawWidgets();
+    var clockInfo = require("clock_info");
+    var clockInfoMenu = clockInfo.load();
+    var clockInfoHeight = 22;
+    for (var i = 0; i < 3; i++) {
+        clockInfo.addInteractive(clockInfoMenu, {
+            app: "cyberpunkclock",
+            x: width - 80 - 8, y: 86 + i * (clockInfoHeight + 8),
+            w: 80, h: clockInfoHeight,
+            draw: function (_item, info, options) {
+                var x = options.x, y = options.y, w = options.w, h = options.h;
+                g.reset();
+                g.setBgColor(0.25, 0, 0);
+                g.clearRect(x, y, x + w, y + h);
+                if (options.focus)
+                    cyan();
+                else
+                    red();
+                var gap = 4;
+                var length = 6;
+                g.drawPoly([
+                    x - gap, y + length,
+                    x - gap, y - gap,
+                    x + length, y - gap,
+                ]);
+                g.drawPoly([
+                    x + w - length, y - gap,
+                    x + w + gap, y - gap,
+                    x + w + gap, y + length,
+                ]);
+                g.drawPoly([
+                    x - gap, y + h - length,
+                    x - gap, y + h + gap,
+                    x + length, y + h + gap,
+                ]);
+                g.drawPoly([
+                    x + w - length, y + h + gap,
+                    x + w + gap, y + h + gap,
+                    x + w + gap, y + h - length,
+                ]);
+                var imageSize = 24;
+                var imageScale = 0.75;
+                var padding = 4;
+                if (info.img) {
+                    cyan();
+                    padding = (h - imageSize * imageScale) / 2;
+                    g.drawImage(info.img, x + padding, y + padding, { scale: imageScale });
+                    padding += imageSize * imageScale + padding;
+                }
+                g.setFont("5x7Numeric7Seg", 2);
+                g.setFontAlign(-1, 0);
+                g.drawString(info.text, x + padding, y + h / 2);
+            },
+        });
+    }
     drawBackground();
     draw();
 })();
