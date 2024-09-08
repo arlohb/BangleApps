@@ -217,7 +217,18 @@
         app: "cyberpunkclock",
         x: 8, y: 43 + i * (clockInfoHeight + 4),
         w: 80, h: clockInfoHeight,
-        draw: (_item, info, options) => {
+        draw: (_item, _info, options) => {
+          // Properly type info
+          const info = _info as {
+            text: string,
+            short?: string,
+            img?: string,
+            color?: string,
+            v?: number,
+            min?: number,
+            max?: number,
+          };
+
           const lineGap = 4;
           let { x, y, w, h } = options;
           x += lineGap;
@@ -281,9 +292,13 @@
             g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
           }
 
+          const text = info.v?.toString()
+            ?? info.short
+            ?? info.text;
+
           g.setFont("5x7Numeric7Seg", 2);
           g.setFontAlign(-1, 0);
-          g.drawString(info.text, x + imagePad + imageSize + textPad, y + h / 2);
+          g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
         },
       },
     );

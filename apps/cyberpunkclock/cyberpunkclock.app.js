@@ -174,7 +174,9 @@
             app: "cyberpunkclock",
             x: 8, y: 43 + i * (clockInfoHeight + 4),
             w: 80, h: clockInfoHeight,
-            draw: function (_item, info, options) {
+            draw: function (_item, _info, options) {
+                var _a, _b, _c;
+                var info = _info;
                 var lineGap = 4;
                 var x = options.x, y = options.y, w = options.w, h = options.h;
                 x += lineGap;
@@ -229,9 +231,10 @@
                     g.setColor(colors.fg);
                     g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
                 }
+                var text = (_c = (_b = (_a = info.v) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : info.short) !== null && _c !== void 0 ? _c : info.text;
                 g.setFont("5x7Numeric7Seg", 2);
                 g.setFontAlign(-1, 0);
-                g.drawString(info.text, x + imagePad + imageSize + textPad, y + h / 2);
+                g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
             },
         });
     }
