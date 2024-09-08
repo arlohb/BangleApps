@@ -15,7 +15,7 @@
         bg2: rawColors.red2,
         fg: rawColors.cyan,
         highlight: rawColors.yellow,
-        lines: rawColors.red,
+        lines: rawColors.red3,
     };
     var width = g.getWidth();
     var height = g.getHeight();

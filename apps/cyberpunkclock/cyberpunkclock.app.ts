@@ -20,7 +20,7 @@
     fg: rawColors.cyan,
     highlight: rawColors.yellow,
 
-    lines: rawColors.red,
+    lines: rawColors.red3,
   };
 
   const width = g.getWidth();
