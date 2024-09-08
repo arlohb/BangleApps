@@ -9,13 +9,17 @@
     red: g.toColor(1, 0, 0),
 
     cyan: g.toColor(0, 1, 1),
-    yellow: g.toColor(1, 1, 0),
+    yellow: g.toColor(0.5, 1, 0),
     pink: g.toColor(1, 0, 0.5),
   };
 
   const colors = {
-    fg: rawColors.cyan,
     bg: rawColors.red1,
+    bg2: rawColors.red2,
+
+    fg: rawColors.cyan,
+    highlight: rawColors.yellow,
+
     lines: rawColors.red,
   };
 
@@ -139,11 +143,11 @@
     const mins = date.getMinutes().toString().padStart(2, "0");
 
     g.setFont("7x11Numeric7Seg", 3);
-    g.setFontAlign(-1, -1);
+    g.setFontAlign(1, -1);
     g.setColor(colors.fg);
     g.setBgColor(colors.bg);
-    g.drawString(hours, 4, 60, true);
-    g.drawString(mins, 4, 95, true);
+    g.drawString(hours, width - 4, 60, true);
+    g.drawString(mins, width - 4, 95, true);
   };
 
   const draw = () => {
@@ -166,69 +170,79 @@
 
   const clockInfo = require("clock_info");
   const clockInfoMenu = clockInfo.load();
-  const clockInfoHeight = 22;
+  const clockInfoHeight = 18;
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     clockInfo.addInteractive(
       clockInfoMenu,
       {
         app: "cyberpunkclock",
-        x: width - 80 - 8, y: 50 + i * (clockInfoHeight + 8),
+        x: 8, y: 47 + i * (clockInfoHeight + 12),
         w: 80, h: clockInfoHeight,
         draw: (_item, info, options) => {
           let { x, y, w, h } = options;
 
           g.reset();
-          g.setBgColor(rawColors.red2);
-          g.clearRect(x, y, x + w, y + h);
 
-          if (options.focus) g.setColor(colors.fg); else g.setColor(rawColors.red);
+          const lineGap = 4;
 
-          const gap = 4;
-          const length = 6;
+          const tlRadius = 10;
+          const tlBLen = 4;
+          const tlRLen = options.focus ? w * 0.8 - tlRadius : 16;
+          const tlAdj = 2;
 
-          // TL
+          const brRadius = 6;
+          const brLLen = options.focus ? w * 0.6  - brRadius: 12;
+          const brTLen = 6;
+          const brAdj = 1;
+
+          g.setBgColor(colors.bg);
+          g.clearRect(x - lineGap, y - lineGap, x + w + lineGap, y + h + lineGap);
+
+          const shape = [
+            x + tlRadius, y,
+            x + w, y,
+            x + w, y + h - brRadius,
+            x + w - brRadius, y + h,
+            x, y + h,
+            x, y + tlRadius,
+            x + tlRadius, y,
+          ];
+          g.setColor(colors.bg2);
+
+          g.fillPoly(shape);
+          g.setColor(colors.lines);
+          g.drawPoly(shape);
+
+          if (options.focus) g.setColor(colors.highlight); else g.setColor(colors.fg);
+
           g.drawPoly([
-            x - gap, y + length,
-            x - gap, y - gap,
-            x + length, y - gap,
+            x - lineGap, y + tlRadius + tlBLen,
+            x - lineGap, y + tlRadius - tlAdj,
+            x + tlRadius - tlAdj, y - lineGap,
+            x + tlRadius + tlRLen, y - lineGap,
           ]);
 
-          // TR
           g.drawPoly([
-            x + w - length, y - gap,
-            x + w + gap, y - gap,
-            x + w + gap, y + length,
+            x + w - brRadius - brLLen, y + h + lineGap,
+            x + w - brRadius + brAdj, y + h + lineGap,
+            x + w + lineGap, y + h - brRadius + brAdj,
+            x + w + lineGap, y + h - brRadius - brTLen,
           ]);
 
-          // BL
-          g.drawPoly([
-            x - gap, y + h - length,
-            x - gap, y + h + gap,
-            x + length, y + h + gap,
-          ]);
-
-          // BR
-          g.drawPoly([
-            x + w - length, y + h + gap,
-            x + w + gap, y + h + gap,
-            x + w + gap, y + h - length,
-          ]);
-
-          const imageSize = 24;
           const imageScale = 0.75;
-          let padding = 4;
+          const imageSize = 24 * imageScale;
+          const imagePad = 9;
+          const textPad = 6;
 
           if (info.img) {
             g.setColor(colors.fg);
-            padding = (h - imageSize * imageScale) / 2;
-            g.drawImage(info.img, x + padding, y + padding, { scale: imageScale });
-            padding += imageSize * imageScale + padding;
+            g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
           }
 
           g.setFont("5x7Numeric7Seg", 2);
           g.setFontAlign(-1, 0);
-          g.drawString(info.text, x + padding, y + h / 2);
+          g.drawString(info.text, x + imagePad + imageSize + textPad, y + h / 2);
         },
       },
     );

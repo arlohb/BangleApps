@@ -7,12 +7,14 @@
         red3: g.toColor(0.75, 0, 0),
         red: g.toColor(1, 0, 0),
         cyan: g.toColor(0, 1, 1),
-        yellow: g.toColor(1, 1, 0),
+        yellow: g.toColor(0.5, 1, 0),
         pink: g.toColor(1, 0, 0.5),
     };
     var colors = {
-        fg: rawColors.cyan,
         bg: rawColors.red1,
+        bg2: rawColors.red2,
+        fg: rawColors.cyan,
+        highlight: rawColors.yellow,
         lines: rawColors.red,
     };
     var width = g.getWidth();
@@ -110,11 +112,11 @@
         var hours = date.getHours().toString().padStart(2, "0");
         var mins = date.getMinutes().toString().padStart(2, "0");
         g.setFont("7x11Numeric7Seg", 3);
-        g.setFontAlign(-1, -1);
+        g.setFontAlign(1, -1);
         g.setColor(colors.fg);
         g.setBgColor(colors.bg);
-        g.drawString(hours, 4, 60, true);
-        g.drawString(mins, 4, 95, true);
+        g.drawString(hours, width - 4, 60, true);
+        g.drawString(mins, width - 4, 95, true);
     };
     var draw = function () {
         drawTime();
@@ -133,55 +135,66 @@
     g.fillRect(0, 24, 176, 176);
     var clockInfo = require("clock_info");
     var clockInfoMenu = clockInfo.load();
-    var clockInfoHeight = 22;
-    for (var i = 0; i < 3; i++) {
+    var clockInfoHeight = 18;
+    for (var i = 0; i < 4; i++) {
         clockInfo.addInteractive(clockInfoMenu, {
             app: "cyberpunkclock",
-            x: width - 80 - 8, y: 50 + i * (clockInfoHeight + 8),
+            x: 8, y: 47 + i * (clockInfoHeight + 12),
             w: 80, h: clockInfoHeight,
             draw: function (_item, info, options) {
                 var x = options.x, y = options.y, w = options.w, h = options.h;
                 g.reset();
-                g.setBgColor(rawColors.red2);
-                g.clearRect(x, y, x + w, y + h);
+                var lineGap = 4;
+                var tlRadius = 10;
+                var tlBLen = 4;
+                var tlRLen = options.focus ? w * 0.8 - tlRadius : 16;
+                var tlAdj = 2;
+                var brRadius = 6;
+                var brLLen = options.focus ? w * 0.6 - brRadius : 12;
+                var brTLen = 6;
+                var brAdj = 1;
+                g.setBgColor(colors.bg);
+                g.clearRect(x - lineGap, y - lineGap, x + w + lineGap, y + h + lineGap);
+                var shape = [
+                    x + tlRadius, y,
+                    x + w, y,
+                    x + w, y + h - brRadius,
+                    x + w - brRadius, y + h,
+                    x, y + h,
+                    x, y + tlRadius,
+                    x + tlRadius, y,
+                ];
+                g.setColor(colors.bg2);
+                g.fillPoly(shape);
+                g.setColor(colors.lines);
+                g.drawPoly(shape);
                 if (options.focus)
-                    g.setColor(colors.fg);
+                    g.setColor(colors.highlight);
                 else
-                    g.setColor(rawColors.red);
-                var gap = 4;
-                var length = 6;
+                    g.setColor(colors.fg);
                 g.drawPoly([
-                    x - gap, y + length,
-                    x - gap, y - gap,
-                    x + length, y - gap,
+                    x - lineGap, y + tlRadius + tlBLen,
+                    x - lineGap, y + tlRadius - tlAdj,
+                    x + tlRadius - tlAdj, y - lineGap,
+                    x + tlRadius + tlRLen, y - lineGap,
                 ]);
                 g.drawPoly([
-                    x + w - length, y - gap,
-                    x + w + gap, y - gap,
-                    x + w + gap, y + length,
+                    x + w - brRadius - brLLen, y + h + lineGap,
+                    x + w - brRadius + brAdj, y + h + lineGap,
+                    x + w + lineGap, y + h - brRadius + brAdj,
+                    x + w + lineGap, y + h - brRadius - brTLen,
                 ]);
-                g.drawPoly([
-                    x - gap, y + h - length,
-                    x - gap, y + h + gap,
-                    x + length, y + h + gap,
-                ]);
-                g.drawPoly([
-                    x + w - length, y + h + gap,
-                    x + w + gap, y + h + gap,
-                    x + w + gap, y + h - length,
-                ]);
-                var imageSize = 24;
                 var imageScale = 0.75;
-                var padding = 4;
+                var imageSize = 24 * imageScale;
+                var imagePad = 9;
+                var textPad = 6;
                 if (info.img) {
                     g.setColor(colors.fg);
-                    padding = (h - imageSize * imageScale) / 2;
-                    g.drawImage(info.img, x + padding, y + padding, { scale: imageScale });
-                    padding += imageSize * imageScale + padding;
+                    g.drawImage(info.img, x + imagePad, y + h / 2 - imageSize / 2, { scale: imageScale });
                 }
                 g.setFont("5x7Numeric7Seg", 2);
                 g.setFontAlign(-1, 0);
-                g.drawString(info.text, x + padding, y + h / 2);
+                g.drawString(info.text, x + imagePad + imageSize + textPad, y + h / 2);
             },
         });
     }
