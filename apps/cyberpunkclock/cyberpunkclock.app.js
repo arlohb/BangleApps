@@ -69,7 +69,40 @@
         g.setColor(color);
         g.fillPoly(polyPoints);
     };
+    var clockBackground = function () {
+        var x1 = width * 0.55;
+        var x2 = width - 8;
+        var y1 = 47;
+        var y2 = height * 0.75;
+        var trRadius = 16;
+        var blDepth = 8;
+        var blLen = 24;
+        var notchY1 = y1 + (y2 - y1) * 0.20;
+        var notchY2 = y1 + (y2 - y1) * 0.60;
+        var notchDepth = 4;
+        var shape = [
+            x1, y1,
+            x2 - trRadius, y1,
+            x2, y1 + trRadius,
+            x2, y2 - blDepth,
+            x2 - blDepth, y2,
+            x1 + blLen + blDepth, y2,
+            x1 + blLen, y2 - blDepth,
+            x1, y2 - blDepth,
+            x1, notchY2,
+            x1 + notchDepth, notchY2 - notchDepth,
+            x1 + notchDepth, notchY1 + notchDepth,
+            x1, notchY1,
+            x1, y1,
+        ];
+        g.reset();
+        g.setColor(colors.bg2);
+        g.fillPoly(shape);
+        g.setColor(colors.fg);
+        g.drawPoly(shape);
+    };
     var drawBackground = function () {
+        clockBackground();
         g.reset();
         drawLine([
             [0, 27],
@@ -111,12 +144,12 @@
         var date = new Date();
         var hours = date.getHours().toString().padStart(2, "0");
         var mins = date.getMinutes().toString().padStart(2, "0");
-        g.setFont("7x11Numeric7Seg", 3);
-        g.setFontAlign(1, -1);
+        g.setFont("7x11Numeric7Seg", 2.5);
+        g.setFontAlign(0, -1);
         g.setColor(colors.fg);
-        g.setBgColor(colors.bg);
-        g.drawString(hours, width - 4, 60, true);
-        g.drawString(mins, width - 4, 95, true);
+        g.setBgColor(colors.bg2);
+        g.drawString(hours, (width * 0.55 + width - 8) / 2, 47 + 12, true);
+        g.drawString(mins, (width * 0.55 + width - 8) / 2, 47 + 12 + 32, true);
     };
     var draw = function () {
         drawTime();

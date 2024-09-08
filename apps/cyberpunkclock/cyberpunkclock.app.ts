@@ -91,7 +91,45 @@
     g.fillPoly(polyPoints);
   };
 
+  const clockBackground = () => {
+    const x1 = width * 0.55;
+    const x2 = width - 8;
+    const y1 = 47;
+    const y2 = height * 0.75;
+
+    const trRadius = 16;
+    const blDepth = 8;
+    const blLen = 24;
+    const notchY1 = y1 + (y2 - y1) * 0.20;
+    const notchY2 = y1 + (y2 - y1) * 0.60;
+    const notchDepth = 4;
+
+    const shape = [
+      x1, y1,
+      x2 - trRadius, y1,
+      x2, y1 + trRadius,
+      x2, y2 - blDepth,
+      x2 - blDepth, y2,
+      x1 + blLen + blDepth, y2,
+      x1 + blLen, y2 - blDepth,
+      x1, y2 - blDepth,
+      x1, notchY2,
+      x1 + notchDepth, notchY2 - notchDepth,
+      x1 + notchDepth, notchY1 + notchDepth,
+      x1, notchY1,
+      x1, y1,
+    ];
+
+    g.reset();
+    g.setColor(colors.bg2);
+    g.fillPoly(shape);
+    g.setColor(colors.fg);
+    g.drawPoly(shape);
+  };
+
   const drawBackground = () => {
+    clockBackground();
+
     g.reset();
     
     drawLine([
@@ -142,12 +180,12 @@
     const hours = date.getHours().toString().padStart(2, "0");
     const mins = date.getMinutes().toString().padStart(2, "0");
 
-    g.setFont("7x11Numeric7Seg", 3);
-    g.setFontAlign(1, -1);
+    g.setFont("7x11Numeric7Seg", 2.5);
+    g.setFontAlign(0, -1);
     g.setColor(colors.fg);
-    g.setBgColor(colors.bg);
-    g.drawString(hours, width - 4, 60, true);
-    g.drawString(mins, width - 4, 95, true);
+    g.setBgColor(colors.bg2);
+    g.drawString(hours, (width * 0.55 + width - 8) / 2, 47 + 12, true);
+    g.drawString(mins, (width * 0.55 + width - 8) / 2, 47 + 12 + 32, true);
   };
 
   const draw = () => {
