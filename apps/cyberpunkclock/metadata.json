@@ -1,0 +1,17 @@
+{
+    "id": "cyberpunkclock",
+    "name": "Cyberpunk Clock",
+    "shortName": "Cyberpunk",
+    "version": "0.01",
+    "icon": "icon.png",
+    "type": "clock",
+    "description": "A cyberpunk style clock",
+    "tags": "clock,clkinfo",
+    "supports": [ "BANGLEJS2" ],
+    "dependencies": { "clock_info": "module" },
+    "readme": "README.md",
+    "storage": [
+        { "name": "cyberpunkclock.app.js", "url": "cyberpunkclock.app.js" },
+        { "name": "cyberpunkclock.img", "url": "icon.js", "evaluate": true }
+    ]
+}
