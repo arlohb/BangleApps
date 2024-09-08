@@ -10,6 +10,14 @@
         g.reset();
         if (debug)
             debug();
+        points.unshift([
+            points[0][0] + points[0][0] - points[1][0],
+            points[0][1] + points[0][1] - points[1][1],
+        ]);
+        points.push([
+            points[points.length - 1][0] + points[points.length - 1][0] - points[points.length - 2][0],
+            points[points.length - 1][1] + points[points.length - 1][1] - points[points.length - 2][1],
+        ]);
         var sideA = [];
         var sideB = [];
         for (var i = 0; i < points.length; i++) {
@@ -66,45 +74,35 @@
             scale: 0.4,
         });
         drawLine([
-            [-10, 26],
             [0, 26],
             [width, 26],
-            [width + 10, 26],
         ], 2, red);
         drawLine([
-            [-10, 34],
             [0, 34],
             [width * 0.2, 34],
             [width * 0.35, 52],
             [width * 0.65, 52],
             [width * 0.8, 34],
             [width, 34],
-            [width + 10, 34],
         ], 2, red);
         drawLine([
-            [-10, 42],
             [0, 42],
             [width * 0.2 - 4, 42],
             [width * 0.35 - 4, 60],
             [width * 0.35 - 4, height],
-            [width * 0.35 - 4, height + 10],
         ], 2, red);
         drawLine([
-            [width + 10, 42],
             [width, 42],
             [width * 0.8 + 4, 42],
             [width * 0.65 + 4, 60],
             [width * 0.35 + 7, 60],
             [width * 0.35 + 6, 61],
             [width * 0.35 + 6, height],
-            [width * 0.35 + 6, height + 10],
         ], 2, red);
         drawLine([
-            [width * 0.65 + 3, 60],
             [width * 0.65 + 4, 60],
             [width * 0.8 + 4, 78],
             [width, 78],
-            [width + 10, 78],
         ], 2, red);
     };
     var drawSteps = function () {
