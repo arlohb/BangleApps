@@ -187,11 +187,9 @@
     g.drawString(hours, width - 8 - 12, 47 + 18, true);
     g.drawString(mins, width - 8 - 12, 47 + 18 + 32, true);
 
-    const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-      [date.getDay()];
     const dayNum = date.getDate();
-    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-      [date.getMonth()];
+    const day = require("locale").dow(date, true);
+    const month = require("locale").month(date, true);
 
     g.reset();
     g.setFont("8x12", 1);

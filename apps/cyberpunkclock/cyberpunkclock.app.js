@@ -151,9 +151,9 @@
         g.setBgColor(colors.bg2);
         g.drawString(hours, width - 8 - 12, 47 + 18, true);
         g.drawString(mins, width - 8 - 12, 47 + 18 + 32, true);
-        var day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
         var dayNum = date.getDate();
-        var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()];
+        var day = require("locale").dow(date, true);
+        var month = require("locale").month(date, true);
         g.reset();
         g.setFont("8x12", 1);
         g.setFontAlign(-1, 1, 1);
