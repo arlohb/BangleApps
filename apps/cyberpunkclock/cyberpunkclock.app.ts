@@ -297,6 +297,94 @@
     g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
   });
 
+  const rangeClockInfo = createClockInfo((_item, info, options) => {
+    const { x, y, w, h } = options;
+
+    const boxW = 24;
+    const boxBlRadius = 8;
+    const boxTrRadius = 4;
+
+    const sliderX1 = x + boxW;
+    const sliderX2 = x + w;
+    const sliderCut = 8;
+    const sliderY1 = y + boxTrRadius + 6;
+    const sliderY2 = y + h * 0.70;
+
+    const accentX1 = sliderX1;
+    const accentX2 = sliderX1 + (sliderX2 - sliderX1) * 0.45;
+    const accentX3 = accentX2 - 4;
+    const accentY1 = sliderY2;
+    const accentY2 = sliderY2 + 3;
+
+    const boxShape = [
+      x, y,
+      x + boxW - boxTrRadius, y,
+      x + boxW, y + boxTrRadius,
+      x + boxW, y + h,
+      x + boxBlRadius, y + h,
+      x, y + h - boxBlRadius,
+      x, y,
+    ];
+
+    g.reset();
+    g.setColor(options.focus ? colors.fg : colors.bg2);
+    g.fillPoly(boxShape);
+    g.setColor(options.focus ? colors.bg2 : colors.fg);
+    g.drawPoly(boxShape);
+
+    const text = info.v?.toString()
+      ?? info.short
+      ?? info.text;
+
+    g.setFont("7x11Numeric7Seg", 1);
+    g.setFontAlign(1, 0);
+    g.drawString(text, x + boxW - 2, y + h / 2);
+
+    const sliderShape = [
+      sliderX1, sliderY1,
+      sliderX2, sliderY1,
+      sliderX2 - sliderCut, sliderY2,
+      sliderX1, sliderY2,
+      sliderX1, sliderY1,
+    ];
+
+    g.reset();
+    g.setColor(colors.bg2);
+    g.fillPoly(sliderShape);
+    g.setColor(colors.fg);
+    g.drawPoly(sliderShape);
+
+    if (info.v !== undefined && info.min !== undefined && info.max !== undefined) {
+      // Just in case this isn't done already
+      const v = E.clip(info.v, info.min, info.max);
+      const percent = (v - info.min) / (info.max - info.min);
+
+      const filledSliderShape = [
+        sliderX1, sliderY1,
+        sliderX1 + (w - boxW) * percent, sliderY1,
+        Math.max(sliderX1 + (w - boxW) * percent - sliderCut, sliderX1), sliderY2,
+        sliderX1, sliderY2,
+        sliderX1, sliderY1,
+      ];
+
+      g.reset();
+      g.setColor(colors.fg);
+      g.fillPoly(filledSliderShape);
+    }
+
+    const accentShape = [
+      accentX1, accentY1,
+      accentX2, accentY1,
+      accentX3, accentY2,
+      accentX1, accentY2,
+      accentX1, accentY1,
+    ];
+
+    g.reset();
+    g.setColor(colors.fg);
+    g.fillPoly(accentShape);
+  });
+
   g.clear();
   Bangle.setUI("clock");
   Bangle.loadWidgets();
@@ -304,6 +392,8 @@
 
   g.setColor(colors.bg);
   g.fillRect(0, 24, 176, 176);
+
+  drawBackground();
 
   const clockInfo = require("clock_info");
   const clockInfoMenu = clockInfo.load();
@@ -316,7 +406,16 @@
     );
   }
 
-  drawBackground();
+  // Position based on clockBackground
+  clockInfo.addInteractive(
+    clockInfoMenu,
+    rangeClockInfo(
+      width * 0.55,
+      height * 0.75 - 1,
+      width - (width * 0.55 + 8),
+      height - (height * 0.75 + 8) - 14,
+    ),
+  );
 
   draw();
 })();

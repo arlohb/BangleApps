@@ -232,18 +232,90 @@
         g.setFontAlign(-1, 0);
         g.drawString(text, x + imagePad + imageSize + textPad, y + h / 2);
     });
+    var rangeClockInfo = createClockInfo(function (_item, info, options) {
+        var _a, _b, _c;
+        var x = options.x, y = options.y, w = options.w, h = options.h;
+        var boxW = 24;
+        var boxBlRadius = 8;
+        var boxTrRadius = 4;
+        var sliderX1 = x + boxW;
+        var sliderX2 = x + w;
+        var sliderCut = 8;
+        var sliderY1 = y + boxTrRadius + 6;
+        var sliderY2 = y + h * 0.70;
+        var accentX1 = sliderX1;
+        var accentX2 = sliderX1 + (sliderX2 - sliderX1) * 0.45;
+        var accentX3 = accentX2 - 4;
+        var accentY1 = sliderY2;
+        var accentY2 = sliderY2 + 3;
+        var boxShape = [
+            x, y,
+            x + boxW - boxTrRadius, y,
+            x + boxW, y + boxTrRadius,
+            x + boxW, y + h,
+            x + boxBlRadius, y + h,
+            x, y + h - boxBlRadius,
+            x, y,
+        ];
+        g.reset();
+        g.setColor(options.focus ? colors.fg : colors.bg2);
+        g.fillPoly(boxShape);
+        g.setColor(options.focus ? colors.bg2 : colors.fg);
+        g.drawPoly(boxShape);
+        var text = (_c = (_b = (_a = info.v) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : info.short) !== null && _c !== void 0 ? _c : info.text;
+        g.setFont("7x11Numeric7Seg", 1);
+        g.setFontAlign(1, 0);
+        g.drawString(text, x + boxW - 2, y + h / 2);
+        var sliderShape = [
+            sliderX1, sliderY1,
+            sliderX2, sliderY1,
+            sliderX2 - sliderCut, sliderY2,
+            sliderX1, sliderY2,
+            sliderX1, sliderY1,
+        ];
+        g.reset();
+        g.setColor(colors.bg2);
+        g.fillPoly(sliderShape);
+        g.setColor(colors.fg);
+        g.drawPoly(sliderShape);
+        if (info.v !== undefined && info.min !== undefined && info.max !== undefined) {
+            var v = E.clip(info.v, info.min, info.max);
+            var percent = (v - info.min) / (info.max - info.min);
+            var filledSliderShape = [
+                sliderX1, sliderY1,
+                sliderX1 + (w - boxW) * percent, sliderY1,
+                Math.max(sliderX1 + (w - boxW) * percent - sliderCut, sliderX1), sliderY2,
+                sliderX1, sliderY2,
+                sliderX1, sliderY1,
+            ];
+            g.reset();
+            g.setColor(colors.fg);
+            g.fillPoly(filledSliderShape);
+        }
+        var accentShape = [
+            accentX1, accentY1,
+            accentX2, accentY1,
+            accentX3, accentY2,
+            accentX1, accentY2,
+            accentX1, accentY1,
+        ];
+        g.reset();
+        g.setColor(colors.fg);
+        g.fillPoly(accentShape);
+    });
     g.clear();
     Bangle.setUI("clock");
     Bangle.loadWidgets();
     Bangle.drawWidgets();
     g.setColor(colors.bg);
     g.fillRect(0, 24, 176, 176);
+    drawBackground();
     var clockInfo = require("clock_info");
     var clockInfoMenu = clockInfo.load();
     var clockInfoHeight = 26;
     for (var i = 0; i < 4; i++) {
         clockInfo.addInteractive(clockInfoMenu, basicClockInfo(8, 43 + i * (clockInfoHeight + 4), 80, clockInfoHeight));
     }
-    drawBackground();
+    clockInfo.addInteractive(clockInfoMenu, rangeClockInfo(width * 0.55, height * 0.75 - 1, width - (width * 0.55 + 8), height - (height * 0.75 + 8) - 14));
     draw();
 })();
