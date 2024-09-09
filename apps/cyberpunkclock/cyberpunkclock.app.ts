@@ -1,6 +1,7 @@
 (() => {
   require("Font5x7Numeric7Seg").add(Graphics);
   require("Font7x11Numeric7Seg").add(Graphics);
+  require("Font8x12").add(Graphics);
 
   const rawColors = {
     red1: g.toColor(0.25, 0, 0),
@@ -174,18 +175,30 @@
   };
 
   const drawTime = () => {
-    g.reset();
-
     const date = new Date();
     const hours = date.getHours().toString().padStart(2, "0");
     const mins = date.getMinutes().toString().padStart(2, "0");
 
+    g.reset();
     g.setFont("7x11Numeric7Seg", 2.5);
-    g.setFontAlign(0, -1);
+    g.setFontAlign(1, -1);
     g.setColor(colors.fg);
     g.setBgColor(colors.bg2);
-    g.drawString(hours, (width * 0.55 + width - 8) / 2, 47 + 12, true);
-    g.drawString(mins, (width * 0.55 + width - 8) / 2, 47 + 12 + 32, true);
+    g.drawString(hours, width - 8 - 12, 47 + 18, true);
+    g.drawString(mins, width - 8 - 12, 47 + 18 + 32, true);
+
+    const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+      [date.getDay()];
+    const dayNum = date.getDate();
+    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+      [date.getMonth()];
+
+    g.reset();
+    g.setFont("8x12", 1);
+    g.setFontAlign(-1, 1, 1);
+    g.setColor(colors.fg);
+    g.setBgColor(colors.bg2);
+    g.drawString(`${day} ${dayNum} ${month}`, width * 0.55 + 8, 47 + 14, true)
   };
 
   const draw = () => {
@@ -195,7 +208,7 @@
     drawTimeout = setTimeout(() => {
       drawTimeout = null;
       draw();
-    }, 60_000 - (Date.now() % 60_000));
+    }, 10_000 - (Date.now() % 10_000));
   };
 
   // ClockInfo.Info is missing some optional properties
