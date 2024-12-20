@@ -209,8 +209,8 @@
     }, 10_000 - (Date.now() % 10_000));
   };
 
-  // ClockInfo.Info is missing some optional properties
-  type ClockInfoInfo = {
+  // ClockInfo.Item is missing some optional properties
+  type ClockInfoItem = {
     text: string,
     short?: string,
     img?: string,
@@ -221,7 +221,7 @@
   };
 
   const createClockInfo = (
-    draw: (item: ClockInfo.MenuItem, info: ClockInfoInfo, options: ClockInfo.InteractiveOptions) => void
+    draw: (item: ClockInfo.MenuItem, info: ClockInfoItem, options: ClockInfo.InteractiveOptions) => void
   ) => (
     x: number, y: number, w: number, h: number
   ): ClockInfo.Options => ({
@@ -229,7 +229,7 @@
     x, y, w, h,
     draw: (item, _info, options) => {
       // Properly type info
-      const info = _info as ClockInfoInfo;
+      const info = _info as ClockInfoItem;
 
       draw(item, info, options);
     },
