@@ -23,6 +23,7 @@ exports.loadSettings = function() {
       hrmOn : 0, // 0(Always), 1(Tap)
       defocusOnLock : true,
       maxAltitude : 3000,
+      haptics:true,
       apps : {}
     },
     require("Storage").readJSON("clock_info.json",1)||{}
@@ -36,8 +37,7 @@ exports.load = function() {
   var settings = exports.loadSettings();
   delete settings.apps; // keep just the basic settings in memory
   // info used for drawing...
-  var hrm = 0;
-  var alt = "--";
+  var hrm = 0, alt = "--", stepDisabled = Bangle.getOptions().stepCounterDisabled;
   // callbacks (needed for easy removal of listeners)
   function batteryUpdateHandler() { bangleItems.find(i=>i.name=="Battery").emit("redraw"); }
   function stepUpdateHandler() { bangleItems.find(i=>i.name=="Steps").emit("redraw"); }
@@ -82,12 +82,21 @@ exports.load = function() {
     },
     { name : "Steps",
       hasRange : true,
-      get : () => { let v = Bangle.getHealthStatus("day").steps; return {
+      get : () => {
+        let v = Bangle.getHealthStatus("day").steps;
+        return {
           text : v, v : v, min : 0, max : stepGoal,
-        img : atob("GBiBAAcAAA+AAA/AAA/AAB/AAB/gAA/g4A/h8A/j8A/D8A/D+AfH+AAH8AHn8APj8APj8AHj4AHg4AADAAAHwAAHwAAHgAAHgAADAA==")
+        img : stepDisabled ? atob("GBiBAAcAAA+AAA/AHA/APB/AfB/g+A/h8A/j4A/nwA/PkA+fOAc+eAB88AD58AHz8APj8AfD4A+A4B8DAD4HwDwHwDgHgAAHgAADAA==") : atob("GBiBAAcAAA+AAA/AAA/AAB/AAB/gAA/g4A/h8A/j8A/D8A/D+AfH+AAH8AHn8APj8APj8AHj4AHg4AADAAAHwAAHwAAHgAAHgAADAA==")
       };},
       show : function() { Bangle.on("step", stepUpdateHandler); stepUpdateHandler(); },
       hide : function() { Bangle.removeListener("step", stepUpdateHandler); },
+      run : function() {
+        if (stepDisabled!==undefined) {
+          stepDisabled = !stepDisabled;
+          Bangle.setOptions({stepCounterDisabled:stepDisabled}); // 2v29
+        }
+        this.emit("redraw");
+      }
     },
     { name : "HRM",
       hasRange : true,
@@ -225,7 +234,8 @@ clockInfoMenu is the 'options' parameter, with the following added:
 * `menuB` : int - index in 'menu[menuA].items' of showing clockInfo item
 * `remove` : function - remove this clockInfo item
 * `redraw` : function - force a redraw
-* `focus` : function - bool to show if menu is focused or not
+* `focus` : bool to show if menu is focused or not
+* `setFocus(f)` function - set if we're focussed or not
 
 You can have more than one clock_info at once as well, for instance:
 
@@ -246,27 +256,21 @@ exports.addInteractive = function(menu, options) {
   if ("function" == typeof options) options = {draw:options}; // backwards compatibility
   options.index = 0|exports.loadCount;
   exports.loadCount = options.index+1;
+  if (!exports.clockInfos.length)
+    E.on("kill", exports.save); // only need one save handler
   exports.clockInfos[options.index] = options;
   options.focus = options.index==0 && options.x===undefined; // focus if we're the first one loaded and no position has been defined
-  const appName = (options.app||"default")+":"+options.index;
-
+  options.appName = (options.app||"default")+":"+options.index;
   // load the currently showing clock_infos
   let settings = exports.loadSettings();
-  if (settings.apps[appName]) {
-    let a = settings.apps[appName].a|0;
-    let b = settings.apps[appName].b|0;
+  if (settings.apps[options.appName]) {
+    let a = settings.apps[options.appName].a|0;
+    let b = settings.apps[options.appName].b|0;
     if (menu[a] && menu[a].items[b]) { // all ok
       options.menuA = a;
       options.menuB = b;
     }
   }
-  const save = () => {
-    // save the currently showing clock_info
-    const settings = exports.loadSettings();
-    settings.apps[appName] = {a:options.menuA, b:options.menuB};
-    require("Storage").writeJSON("clock_info.json",settings);
-  };
-  E.on("kill", save);
 
   if (options.menuA===undefined) options.menuA = 0;
   if (options.menuB===undefined) options.menuB = Math.min(exports.loadCount, menu[options.menuA].items.length)-1;
@@ -293,13 +297,16 @@ exports.addInteractive = function(menu, options) {
     var oldMenuItem;
     if (ud) {
       if (menu[options.menuA].items.length==1) return; // 1 item - can't move
+      if(settings.haptics) Bangle.buzz(30);
       oldMenuItem = menu[options.menuA].items[options.menuB];
       options.menuB += ud;
       if (options.menuB<0) options.menuB = menu[options.menuA].items.length-1;
       if (options.menuB>=menu[options.menuA].items.length) options.menuB = 0;
+      options.modified = true;
     } else if (lr) {
       if (menu.length==1) return; // 1 item - can't move
       oldMenuItem = menu[options.menuA].items[options.menuB];
+      if(settings.haptics) Bangle.buzz(44);
       do {
         options.menuA += lr;
         if (options.menuA<0) options.menuA = menu.length-1;
@@ -313,6 +320,7 @@ exports.addInteractive = function(menu, options) {
       while ((options.menuB < menu[options.menuA].items.length-1) &&
              exports.clockInfos.some(m => (m!=options) && m.menuA==options.menuA && m.menuB==options.menuB))
           options.menuB++;
+      options.modified = true;
     }
     if (oldMenuItem) {
       menuHideItem(oldMenuItem);
@@ -355,7 +363,7 @@ exports.addInteractive = function(menu, options) {
       if (!options.focus) {
         focus();
       } else if (menu[options.menuA].items[options.menuB].run) {
-        Bangle.buzz(100, 0.7);
+        if(settings.haptics) Bangle.buzz(100, 0.7);
         menu[options.menuA].items[options.menuB].run(options); // allow tap on an item to run it (eg home assistant)
       }
     };
@@ -372,8 +380,7 @@ exports.addInteractive = function(menu, options) {
   menuShowItem(menu[options.menuA].items[options.menuB]);
   // return an object with info that can be used to remove the info
   options.remove = function() {
-    save();
-    E.removeListener("kill", save);
+    exports.save();
     Bangle.removeListener("swipe",swipeHandler);
     if (touchHandler) Bangle.removeListener("touch",touchHandler);
     if (lockHandler) Bangle.removeListener("lock", lockHandler);
@@ -381,6 +388,8 @@ exports.addInteractive = function(menu, options) {
     menuHideItem(menu[options.menuA].items[options.menuB]);
     exports.loadCount--;
     delete exports.clockInfos[options.index];
+    if (!exports.clockInfos.length) // if no more clockinfos, no need to save
+      E.removeListener("kill", exports.save);
     // If nothing loaded now, clear our list of loaded menus
     if (exports.loadCount==0)
       exports.clockInfoMenus = undefined;
@@ -405,12 +414,16 @@ exports.addInteractive = function(menu, options) {
 
     return true;
   };
+  options.setFocus = function(f) {
+    if (f==options.focus) return;
+    if (f) focus(); else blur();
+  };
   if (options.focus) focus();
   delete settings; // don't keep settings in RAM - save space
   return options;
 };
 
-/* clockinfos usually return a 24x24 image. This draws that image but
+/** clockinfos usually return a 24x24 image. This draws that image but
 recolors it such that it is transparent, with the middle of the image as background
 and the image itself as foreground. options is passed to g.drawImage */
 exports.drawFilledImage = function(img,x,y,options) {
@@ -431,7 +444,7 @@ exports.drawFilledImage = function(img,x,y,options) {
   return g.drawImage(gfx, x-scale,y-scale,options);
 };
 
-/* clockinfos usually return a 24x24 image. This creates a 26x26 gfx of the image but
+/** clockinfos usually return a 24x24 image. This creates a 26x26 gfx of the image but
 recolors it such that it is transparent, with the middle and border of the image as background
 and the image itself as foreground. options is passed to g.drawImage */
 exports.drawBorderedImage = function(img,x,y,options) {
@@ -441,13 +454,33 @@ exports.drawBorderedImage = function(img,x,y,options) {
   if (!gfx) {
     gfx = exports.imgGfxB = Graphics.createArrayBuffer(28, 28, 2, {msb:true});
     gfx.transparent = 3;
-    gfx.palette = new Uint16Array([g.theme.bg, g.theme.fg, g.theme.bg/*border*/, g.toColor("#888")]);
+    gfx.palette = new Uint16Array([g.theme.bg, g.theme.bg/*border*/, g.theme.fg, g.toColor("#888")]);
   }
-  gfx.clear(1).setColor(2).drawImage(img, 1,1).drawImage(img, 3,1).drawImage(img, 1,3).drawImage(img, 3,3); // border
-  gfx.setColor(1).drawImage(img, 2,2); // main image
+  if (gfx.filter) { // if firmware supports it (2v22+) use filter which can give a much better border
+    gfx.clear(1).setColor(2).drawImage(img, 2,2); // main image
+    gfx.filter([ // a gaussian filter
+      1,1,1,
+      1,1,1,
+      1,1,1,
+    ], { w:3, h:3, div:1, max:1,filter:"max" });
+  } else {
+    gfx.clear(1).setColor(1).drawImage(img, 1,1).drawImage(img, 3,1).drawImage(img, 1,3).drawImage(img, 3,3); // border
+    gfx.setColor(2).drawImage(img, 2,2); // main image
+  }
   gfx.floodFill(27,27,3); // flood fill edge to transparent
   var o = ((options && options.scale) || 1)*2;
   return g.drawImage(gfx, x-o,y-o,options);
+};
+
+/** Save clockinfos if modified */
+exports.save = function() {
+  if (!exports.clockInfos.some(ci=>ci.modified)) return; // all written?
+  const settings = exports.loadSettings();
+  exports.clockInfos.forEach(ci => {
+    settings.apps[ci.appName] = {a:ci.menuA, b:ci.menuB};
+    ci.modified = false;
+  });
+  require("Storage").writeJSON("clock_info.json",settings);
 };
 
 // Code for testing (plots all elements from first list)
