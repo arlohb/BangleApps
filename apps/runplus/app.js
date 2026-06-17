@@ -99,7 +99,7 @@ function onStartStop() {
       promise = promise.
         then(() => {
           screen = "menu";
-          const ret = WIDGETS["recorder"].setRecording(true, { force : recordMode });
+          const ret = WIDGETS["recorder"].setRecording(true, { force : recordMode, type : "running" });
           if(shouldResume) recordMode = "append"; // subsequent onStartStop()s resume the new recording
           return ret;
         }).then(() => {
