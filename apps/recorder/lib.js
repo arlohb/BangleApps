@@ -306,9 +306,7 @@ exports.setRecording = function(isOn, options) {
   options = options||{};
   if (isOn && !settings.recording) {
     var date=(new Date()).toISOString().substr(0,10).replace(/-/g,""), trackNo=10;
-    function getTrackFilename() {
-      return "recorder.log" + date + trackNo.toString(36) + (options.type ? "-" + options.type : "") + ".csv";
-    }
+    function getTrackFilename() { return "recorder.log" + date + trackNo.toString(36) + ".csv"; }
     if (!settings.file || !settings.file.startsWith("recorder.log" + date)) {
       // if no filename set or date different, set up a new filename
       settings.file = getTrackFilename();
@@ -347,6 +345,7 @@ exports.setRecording = function(isOn, options) {
         settings.file = newFileName;
       } else throw new Error("Unknown options.force, "+options.force);
     }
+    if (options.type) settings.file = settings.file.substring(0,settings.file.length-4) + "-" + options.type + ".csv";
   }
   settings.recording = !!isOn;
   updateSettings(settings);
