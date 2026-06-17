@@ -300,12 +300,15 @@ exports.setWidgetWidth = function() {
 exports.setRecording = function(isOn, options) {
   /* options = {
     force : [optional] "append"/"new"/"overwrite" - don't ask, just do what's requested
+    type? : string,
   } */
   var settings = loadSettings();
   options = options||{};
   if (isOn && !settings.recording) {
     var date=(new Date()).toISOString().substr(0,10).replace(/-/g,""), trackNo=10;
-    function getTrackFilename() { return "recorder.log" + date + trackNo.toString(36) + ".csv"; }
+    function getTrackFilename() {
+      return "recorder.log" + date + trackNo.toString(36) + (options.type ? "-" + options.type : "") + ".csv";
+    }
     if (!settings.file || !settings.file.startsWith("recorder.log" + date)) {
       // if no filename set or date different, set up a new filename
       settings.file = getTrackFilename();
